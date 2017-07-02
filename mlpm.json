@@ -1,0 +1,6 @@
+{
+  "name": "ml-date-ranges",
+  "version": "1.0.0",
+  "description": "MarkLogic library for generating various date/time ranges",
+  "repository": "https://github.com/grtjn/ml-date-ranges.git"
+}
