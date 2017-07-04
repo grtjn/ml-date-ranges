@@ -10,7 +10,8 @@
 
 
 Author:  Geert Josten
-  June 30, 2017
+ 
+  Since:  June 30, 2017
  
 Version:  1.0.0
 
@@ -72,7 +73,6 @@ $dr:valid-types as  xs:string+
 
 
 
-
 ## Functions
 
 ### <a name="func_dr_ranges_3"/> dr:ranges\#3
@@ -100,11 +100,11 @@ dr:ranges(
 
  Result:
  
-     &gt;range start="1996-01-01" end="1997-01-01" label="1996 - 1997"/>
-     &gt;range start="1997-01-01" end="1998-01-01" label="1997 - 1998"/>
-     &gt;range start="1998-01-01" end="1999-01-01" label="1998 - 1999"/>
-     &gt;range start="1999-01-01" end="2000-01-01" label="1999 - 2000"/>
-     &gt;range start="2000-01-01" end="2001-01-01" label="2000 - 2001"/>
+     <range start="1996-01-01" end="1997-01-01" label="1996 - 1997"/>
+     <range start="1997-01-01" end="1998-01-01" label="1997 - 1998"/>
+     <range start="1998-01-01" end="1999-01-01" label="1998 - 1999"/>
+     <range start="1999-01-01" end="2000-01-01" label="1999 - 2000"/>
+     <range start="2000-01-01" end="2001-01-01" label="2000 - 2001"/>
 
  
 
@@ -165,6 +165,7 @@ dr:detect-level(
  
 * dr:INVALID-TYPE Invalid min/max type 'xxx', allowed are: yyy, zzz
  
+
 
 
 
