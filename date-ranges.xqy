@@ -1,5 +1,16 @@
 xquery version "1.0-ml";
 
+(:~ 
+: This module provides functions that help generate value ranges for all date/time related data types.
+: 
+: Note:
+: Although it also supports generating ranges for gMonthDay, MarkLogic currently does not allow
+: range indexes on them yet.
+:
+: @author Geert Josten
+: @since June 30, 2017
+: @version 1.0.0
+:)
 module namespace dr = "http://marklogic.com/date-ranges";
 
 import module namespace functx = "http://www.functx.com" at "/MarkLogic/functx/functx-1.0-nodoc-2007-01.xqy";
@@ -219,17 +230,76 @@ declare private variable $valid-level-types := map:new((
   map:entry("second", ("dateTime", "time"))
 ));
 
-declare variable $dr:valid-levels :=
+(:~ List of valid levels. Do not change. Currently:<ul>
+: <li>year</li>
+: <li>month</li>
+: <li>day</li>
+: <li>hour</li>
+: <li>minute</li>
+: <li>second</li>
+: </ul>
+:)
+declare variable $dr:valid-levels as xs:string+ :=
   for $k in map:keys($valid-level-types)
   order by $k
   return $k
 ;
-declare variable $dr:valid-types :=
+
+(:~ List of valid types, aggregated over all levels. Do not change. Currently:<ul>
+: <li>date</li>
+: <li>dateTime</li>
+: <li>gday</li>
+: <li>gMonth</li>
+: <li>gMonthDay</li>
+: <li>gYear</li>
+: <li>gYearMonth</li>
+: <li>time</li>
+: </ul>
+:)
+declare variable $dr:valid-types as xs:string+ :=
   for $t in distinct-values($dr:valid-levels ! map:get($valid-level-types, .))
   order by $t
   return $t
 ;
 
+(:~ 
+: Function for generating value ranges.
+:
+: Example:
+: <pre> xquery version "1.0-ml";
+:
+: import module dr = "http://marklogic.com/date-ranges" at "/ext/mlpm_modules/ml-date-ranges/date-ranges.xqy";
+:
+: dr:ranges(
+:   (xs:date("1996-10-25"), xs:date("2000-02-05")),
+:   "year",
+:   "interval=1"
+: )</pre>
+:
+: Result:
+: <pre> &gt;range start="1996-01-01" end="1997-01-01" label="1996 - 1997"/>
+: &gt;range start="1997-01-01" end="1998-01-01" label="1997 - 1998"/>
+: &gt;range start="1998-01-01" end="1999-01-01" label="1998 - 1999"/>
+: &gt;range start="1999-01-01" end="2000-01-01" label="1999 - 2000"/>
+: &gt;range start="2000-01-01" end="2001-01-01" label="2000 - 2001"/></pre>
+:
+: @param $minmax List of values from which min and max should be derived, should have uniform type.
+: @param $level Level to which value ranges should be rounded, one of $dr:valid-levels.
+: @param $options List of options, supported:
+: <ul>
+: <li>interval=n Multiplication factor for interval, n must be positive, default 1</li>
+: </ul>
+:
+: @return Value ranges, expressed as start and end in datatype of $minmax, and label matching $level.
+:
+: @error
+: <ul>
+: <li>dr:INVALID-LEVEL Invalid level 'xxx', allowed are: yyy, zzz</li>
+: <li>dr:INVALID-MINMAX Min/max must have one uniform type: xxx, yyy, zzz</li>
+: <li>dr:INVALID-TYPE Invalid min/max type 'xxx', allowed are: yyy, zzz</li>
+: <li>dr:INVALID-OPTION Interval must be positive integer: nnn</li>
+: </ul>
+:)
 declare function dr:ranges(
   $minmax as xs:anyAtomicType+,
   $level as xs:string,
@@ -306,6 +376,19 @@ declare function dr:ranges(
     error(xs:QName("dr:INVALID-LEVEL"), "Invalid level '" || $level || "', allowed are: " || string-join($dr:valid-levels, ", "))
 };
 
+(:~ 
+: Function for detecting most appropriate ranges level.
+:
+: @param  $minmax List of values from which min and max should be derived, should have uniform type.
+:
+: @return Appropriate level, or empty-sequence if none found.
+:
+: @error
+: <ul>
+: <li>dr:INVALID-MINMAX Min/max must have one uniform type: xxx, yyy, zzz</li>
+: <li>dr:INVALID-TYPE Invalid min/max type 'xxx', allowed are: yyy, zzz</li>
+: </ul>
+:)
 declare function dr:detect-level(
   $minmax as xs:anyAtomicType+
 )

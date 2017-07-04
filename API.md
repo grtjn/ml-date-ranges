@@ -1,4 +1,18 @@
 # library module: http://marklogic.com/date-ranges
+ 
+ This module provides functions that help generate value ranges for all date/time related data types.
+ 
+ Note:
+ Although it also supports generating ranges for gMonthDay, MarkLogic currently does not allow
+ range indexes on them yet.
+
+ 
+
+
+Author:  Geert Josten
+  June 30, 2017
+ 
+Version:  1.0.0
 
 
 ## Table of Contents
@@ -11,13 +25,51 @@
 
 ### <a name="var_dr_valid-levels"/> $dr:valid-levels
 ```xquery
-$dr:valid-levels as 
+$dr:valid-levels as  xs:string+
 ```
+ List of valid levels. Do not change. Currently:
+
+ 
+* year
+ 
+* month
+ 
+* day
+ 
+* hour
+ 
+* minute
+ 
+* second
+ 
+
+
 
 ### <a name="var_dr_valid-types"/> $dr:valid-types
 ```xquery
-$dr:valid-types as 
+$dr:valid-types as  xs:string+
 ```
+ List of valid types, aggregated over all levels. Do not change. Currently:
+
+ 
+* date
+ 
+* dateTime
+ 
+* gday
+ 
+* gMonth
+ 
+* gMonthDay
+ 
+* gYear
+ 
+* gYearMonth
+ 
+* time
+ 
+
+
 
 
 
@@ -31,18 +83,58 @@ dr:ranges(
   $options as xs:string*
 ) as  element(range)*
 ```
+ 
+ Function for generating value ranges.
+
+ Example:
+ 
+     xquery version "1.0-ml";
+    
+     import module dr = "http://marklogic.com/date-ranges" at "/ext/mlpm_modules/ml-date-ranges/date-ranges.xqy";
+    
+     dr:ranges(
+       (xs:date("1996-10-25"), xs:date("2000-02-05")),
+       "year",
+       "interval=1"
+     )
+
+ Result:
+ 
+     &gt;range start="1996-01-01" end="1997-01-01" label="1996 - 1997"/>
+     &gt;range start="1997-01-01" end="1998-01-01" label="1997 - 1998"/>
+     &gt;range start="1998-01-01" end="1999-01-01" label="1998 - 1999"/>
+     &gt;range start="1999-01-01" end="2000-01-01" label="1999 - 2000"/>
+     &gt;range start="2000-01-01" end="2001-01-01" label="2000 - 2001"/>
+
+ 
+
 
 #### Params
 
-* $minmax as  xs:anyAtomicType+
+* $minmax as  xs:anyAtomicType+ List of values from which min and max should be derived, should have uniform type.
 
-* $level as  xs:string
+* $level as  xs:string Level to which value ranges should be rounded, one of $dr:valid-levels.
 
-* $options as  xs:string\*
+* $options as  xs:string\* List of options, supported: interval=n Multiplication factor for interval, n must be positive, default 1
 
 
 #### Returns
-*  element(range)\*
+*  element(range)\*: Value ranges, expressed as start and end in datatype of $minmax, and label matching $level.
+
+#### Errors
+
+ 
+
+ 
+* dr:INVALID-LEVEL Invalid level 'xxx', allowed are: yyy, zzz
+ 
+* dr:INVALID-MINMAX Min/max must have one uniform type: xxx, yyy, zzz
+ 
+* dr:INVALID-TYPE Invalid min/max type 'xxx', allowed are: yyy, zzz
+ 
+* dr:INVALID-OPTION Interval must be positive integer: nnn
+ 
+
 
 ### <a name="func_dr_detect-level_1"/> dr:detect-level\#1
 ```xquery
@@ -50,14 +142,30 @@ dr:detect-level(
   $minmax as xs:anyAtomicType+
 ) as  xs:string?
 ```
+ 
+ Function for detecting most appropriate ranges level.
+
+ 
+
 
 #### Params
 
-* $minmax as  xs:anyAtomicType+
+* $minmax as  xs:anyAtomicType+ List of values from which min and max should be derived, should have uniform type.
 
 
 #### Returns
-*  xs:string?
+*  xs:string?: Appropriate level, or empty-sequence if none found.
+
+#### Errors
+
+ 
+
+ 
+* dr:INVALID-MINMAX Min/max must have one uniform type: xxx, yyy, zzz
+ 
+* dr:INVALID-TYPE Invalid min/max type 'xxx', allowed are: yyy, zzz
+ 
+
 
 
 
