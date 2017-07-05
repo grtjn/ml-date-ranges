@@ -73,6 +73,7 @@ $dr:valid-types as  xs:string+
 
 
 
+
 ## Functions
 
 ### <a name="func_dr_ranges_3"/> dr:ranges\#3
@@ -165,7 +166,6 @@ dr:detect-level(
  
 * dr:INVALID-TYPE Invalid min/max type 'xxx', allowed are: yyy, zzz
  
-
 
 
 

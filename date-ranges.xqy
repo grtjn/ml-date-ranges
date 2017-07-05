@@ -20,6 +20,40 @@ declare default function namespace "http://www.w3.org/2005/xpath-functions"; (::
 
 declare option xdmp:mapping "false";
 
+(: PUBLIC :)
+
+(:~ List of valid levels. Do not change. Currently:<ul>
+: <li>year</li>
+: <li>month</li>
+: <li>day</li>
+: <li>hour</li>
+: <li>minute</li>
+: <li>second</li>
+: </ul>
+:)
+declare variable $dr:valid-levels as xs:string+ :=
+  for $k in map:keys($valid-level-types)
+  order by $k
+  return $k
+;
+
+(:~ List of valid types, aggregated over all levels. Do not change. Currently:<ul>
+: <li>date</li>
+: <li>dateTime</li>
+: <li>gday</li>
+: <li>gMonth</li>
+: <li>gMonthDay</li>
+: <li>gYear</li>
+: <li>gYearMonth</li>
+: <li>time</li>
+: </ul>
+:)
+declare variable $dr:valid-types as xs:string+ :=
+  for $t in distinct-values($dr:valid-levels ! map:get($valid-level-types, .))
+  order by $t
+  return $t
+;
+
 (:~ 
 : Function for generating value ranges.
 :
@@ -146,8 +180,6 @@ declare function dr:ranges(
 : <li>dr:INVALID-MINMAX Min/max must have one uniform type: xxx, yyy, zzz</li>
 : <li>dr:INVALID-TYPE Invalid min/max type 'xxx', allowed are: yyy, zzz</li>
 : </ul>
-:
-:&lt;!-- START IGNORE -->
 :)
 declare function dr:detect-level(
   $minmax as xs:anyAtomicType+
@@ -180,6 +212,18 @@ declare function dr:detect-level(
   else
     error(xs:QName("dr:INVALID-TYPE"), "Invalid min/max type '" || $type || "', allowed are: " || string-join($dr:valid-types, ", "))
 };
+
+(:-- START PRIVATE --:)
+
+declare private variable $valid-level-types := map:new((
+  map:entry("year", ("date", "dateTime", "gYear", "gYearMonth")),
+  map:entry("month", ("date", "dateTime", "gMonth", "gMonthDay", "gYearMonth")),
+  map:entry("day", ("date", "dateTime", "gDay", "gMonthDay")),
+
+  map:entry("hour", ("dateTime", "time")),
+  map:entry("minute", ("dateTime", "time")),
+  map:entry("second", ("dateTime", "time"))
+));
 
 declare private function dr:type(
   $items as xs:anyAtomicType+
@@ -382,49 +426,4 @@ declare private function dr:cast-to(
     error(xs:QName("dr:TODO-CAST"), "Not implemented yet")
 };
 
-(:~&lt;!-- END IGNORE -->:)
-declare private function dr:end-ignore() { () };
-
-(:~ List of valid levels. Do not change. Currently:<ul>
-: <li>year</li>
-: <li>month</li>
-: <li>day</li>
-: <li>hour</li>
-: <li>minute</li>
-: <li>second</li>
-: </ul>
-:)
-declare variable $dr:valid-levels as xs:string+ :=
-  for $k in map:keys($valid-level-types)
-  order by $k
-  return $k
-;
-
-(:~ List of valid types, aggregated over all levels. Do not change. Currently:<ul>
-: <li>date</li>
-: <li>dateTime</li>
-: <li>gday</li>
-: <li>gMonth</li>
-: <li>gMonthDay</li>
-: <li>gYear</li>
-: <li>gYearMonth</li>
-: <li>time</li>
-: </ul>
-:&lt;!-- START IGNORE -->
-:)
-declare variable $dr:valid-types as xs:string+ :=
-  for $t in distinct-values($dr:valid-levels ! map:get($valid-level-types, .))
-  order by $t
-  return $t
-;
-
-(:~&lt;!-- END IGNORE -->:)
-declare private variable $valid-level-types := map:new((
-  map:entry("year", ("date", "dateTime", "gYear", "gYearMonth")),
-  map:entry("month", ("date", "dateTime", "gMonth", "gMonthDay", "gYearMonth")),
-  map:entry("day", ("date", "dateTime", "gDay", "gMonthDay")),
-
-  map:entry("hour", ("dateTime", "time")),
-  map:entry("minute", ("dateTime", "time")),
-  map:entry("second", ("dateTime", "time"))
-));
+(:-- END PRIVATE --:)
